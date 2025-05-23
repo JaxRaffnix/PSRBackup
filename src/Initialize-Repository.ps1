@@ -4,14 +4,14 @@ function Initialize-Repository {
         [Parameter(Mandatory)]
         [string]$RepoPath,
 
-        [SecureString]$PasswordSecretName,
+        [string]$PasswordSecretName,
         [switch]$Force
     )
 
     Write-Host "🚀 Initializing restic repository..." -ForegroundColor Cyan
-    if ($PasswordSecretName) {Write-Host "  ├─ Password secret name: $PasswordSecretName"}
+    if ($PasswordSecretName) {Write-Host "  ├─ Password secret name: '$PasswordSecretName'"}
     if ($Force) {Write-Host "  ├─ Force: $Force"}
-    Write-Host "  └─ Repository path: $RepoPath"
+    Write-Host "  └─ Repository path: '$RepoPath'"
 
     Test-Installation -App 'restic'
 

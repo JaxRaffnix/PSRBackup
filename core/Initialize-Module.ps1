@@ -1,4 +1,4 @@
-.PSScriptRoot\..\helpers\Test-Installation.ps1
+.$PSScriptRoot\..\helpers\Test-Installation.ps1
 
 $ModuleName = "PSRBackup"
 
@@ -28,7 +28,7 @@ if (-not $resticInstalled) {
     Write-Host "✅ Restic already installed."
 }
 
-Write-Host "🔍 Ensuring SecretManagement modules are available..."
+Write-Host "🔍 Installing modules SecretManagement and SecretStore..."
 foreach ($module in @("Microsoft.PowerShell.SecretManagement", "Microsoft.PowerShell.SecretStore")) {
     if (-not (Get-Module -ListAvailable -Name $module)) {
         Write-Host "📦 Installing module '$module'..." -ForegroundColor Cyan
@@ -38,14 +38,24 @@ foreach ($module in @("Microsoft.PowerShell.SecretManagement", "Microsoft.PowerS
     }
 }
 
-Write-Host "📥 Importing modules..."
-Import-Module Microsoft.PowerShell.SecretManagement -Force
-Import-Module Microsoft.PowerShell.SecretStore -Force
+Write-Host "📥 Importing modules SecretManagement and SecretStore..."
+foreach ($module in @("Microsoft.PowerShell.SecretManagement", "Microsoft.PowerShell.SecretStore")) {
+    if (-not (Get-Module -Name $module)) {
+        Import-Module $module -Force
+        Write-Host "✅ Module '$module' imported."
+    } else {
+        Write-Host "✅ Module '$module' is already imported."
+    }
+}
 
-Write-Host "🔐 Ensuring vault '$VaultName' is registered..."
+$VaultName = "PSRBackup"
+
+Write-Host "🔐 Registering vault '$VaultName'..."
 if (-not (Get-SecretVault -Name $VaultName -ErrorAction SilentlyContinue)) {
     Register-SecretVault -Name $VaultName -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault
-    Write-Host "✅ Secret vault '$VaultName' registered." -ForegroundColor Green
+    Write-Host "✅ Secret vault '$VaultName' registered."
 } else {
     Write-Host "✅ Vault '$VaultName' already registered."
 }
+
+Write-Host "Initialized module $ModuleName successfully." -ForegroundColor Green

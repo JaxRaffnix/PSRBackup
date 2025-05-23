@@ -8,17 +8,17 @@ function Start-Backup {
 
         [string]$ExcludeFile = "$PSScriptRoot..\config\exclude.txt",
 
-        [SecureString]$PasswordSecretName,
+        [string]$PasswordSecretName,
 
         [int64]$MaxFileSize = 100MB,
         [int64]$MaxFolderSize = 10GB
     )
 
     Write-Host "`n🔄 Starting restic backup..." -ForegroundColor Cyan
-    Write-Host "  ├─ Source path: $SourcePath"
-    Write-Host "  ├─ Repository path: $RepoPath"
-    if ($ExcludeFile) {Write-Host "  ├─ Exclude file: $ExcludeFile"}   
-    if ($PasswordSecretName) {Write-Host "  ├─ Password secret name: $PasswordSecretName"}  
+    Write-Host "  ├─ Source path: '$SourcePath'"
+    Write-Host "  ├─ Repository path: '$RepoPath'"
+    if ($ExcludeFile) {Write-Host "  ├─ Exclude file: '$ExcludeFile'"}   
+    if ($PasswordSecretName) {Write-Host "  ├─ Password secret name: '$PasswordSecretName'"}  
     Write-Host "  ├─ Max file size: $MaxFileSize bytes"
     Write-Host "  └─ Max folder size: $MaxFolderSize bytes"
     

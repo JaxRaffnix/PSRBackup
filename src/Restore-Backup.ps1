@@ -9,15 +9,15 @@ function Restore-ResticBackup {
 
         [string]$SnapshotId = "latest",
         [string]$SubPath = ".",
-        [SecureString]$PasswordSecretName
+        [string]$PasswordSecretName
     )
 
     Write-Host "🔄 Restoring backup..." -ForegroundColor Cyan
-    Write-Host "  ├─ Repository path: $RepoPath"
-    Write-Host "  └─ Target path: $TargetPath"
-    if ($PasswordSecretName) {Write-Host "  ├─ Password secret name: $PasswordSecretName"}
-    Write-Host "  ├─ Snapshot ID: $SnapshotId"
-    Write-Host "  └─ Subpath: $SubPath"
+    Write-Host "  ├─ Repository path: '$RepoPath'"
+    Write-Host "  └─ Target path: '$TargetPath'"
+    if ($PasswordSecretName) {Write-Host "  ├─ Password secret name: '$PasswordSecretName'"}
+    Write-Host "  ├─ Snapshot ID: '$SnapshotId'"
+    Write-Host "  └─ Subpath: '$SubPath'"
     
     Test-Installation -App 'restic'
 
