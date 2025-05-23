@@ -81,7 +81,7 @@ if (-not (Test-Path $TargetPath)) {
     }
 } else {
     # this should never happen, because we removed it above
-    Throw "Target directory '$TargetPath' already exists."
+    Throw "❌ Target directory '$TargetPath' already exists."
 }
 
 $IgnoreFiles = @(".git", "setup", "core/Generate-Manifest.ps1")

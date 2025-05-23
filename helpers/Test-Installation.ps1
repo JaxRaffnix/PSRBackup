@@ -24,6 +24,6 @@ function Test-Installation {
         # Check if the application is available in the PATH
         Get-Command -Name $App -ErrorAction Stop | Out-Null
     } catch {
-        Write-Error "❌ $App is not installed or not available in the PATH. Please install $App and try again."
+        Throw "❌ $App is not installed or not available in the PATH. Please install $App and try again."
     }
 }

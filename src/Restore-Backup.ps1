@@ -7,30 +7,24 @@ function Restore-ResticBackup {
         [Parameter(Mandatory)]
         [string]$TargetPath,
 
-        [Parameter()]
         [string]$SnapshotId = "latest",
-
-        [Parameter()]
         [string]$SubPath = ".",
-
-        [Parameter()]
         [SecureString]$PasswordSecretName
     )
 
-    Write-Host "🔄 Restoring backup from '$RepoPath' to '$TargetPath'..." -ForegroundColor Cyan
-    Write-Host "  ├─ Snapshot ID: $SnapshotId"
-    Write-Host "  ├─ Subpath: $SubPath"
+    Write-Host "🔄 Restoring backup..." -ForegroundColor Cyan
+    Write-Host "  ├─ Repository path: $RepoPath"
     Write-Host "  └─ Target path: $TargetPath"
-
+    if ($PasswordSecretName) {Write-Host "  ├─ Password secret name: $PasswordSecretName"}
+    Write-Host "  ├─ Snapshot ID: $SnapshotId"
+    Write-Host "  └─ Subpath: $SubPath"
+    
     Test-Installation -App 'restic'
 
-    # Derive secret name if not provided
     if (-not $PasswordSecretName) {
-        $PasswordSecretName = "ResticPassword_" + ([Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($RepoPath)) -replace "[^a-zA-Z0-9]", "")
-        Write-Verbose "Derived secret name: $PasswordSecretName"
+        $PasswordSecretName = Get-DerivedSecretName -RepoPath $RepoPath
     }
 
-    # Retrieve password
     try {
         $securePassword = Get-ResticPassword -Name $PasswordSecretName
         $plainPassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
@@ -40,33 +34,19 @@ function Restore-ResticBackup {
         Throw "❌ Could not retrieve restic password: $_"
     }
 
-    # Set environment variable
-    $originalEnv = $env:RESTIC_PASSWORD
-    $env:RESTIC_PASSWORD = $plainPassword
+    Set-ResticEnvironment -Password $plainPassword
 
     try {
-        # Create target directory if necessary
         if (-not (Test-Path $TargetPath)) {
             New-Item -ItemType Directory -Path $TargetPath -Force | Out-Null
         }
 
-        # Run restore
-        $restoreArgs = @(
-            'restore', $SnapshotId,
-            '--repo', $RepoPath,
-            '--target', $TargetPath,
-            '--path', $SubPath
-        )
-        & restic @restoreArgs
-
+        & restic restore $SnapshotId --repo $RepoPath --target $TargetPath --path $SubPath
         if ($LASTEXITCODE -ne 0) {
             Throw "❌ Restic restore failed with exit code $LASTEXITCODE."
         }
     } finally {
-        # Clear env var and password
-        $env:RESTIC_PASSWORD = $originalEnv
-        $plainPassword = $null
-        [System.GC]::Collect()
+        Reset-ResticEnvironment
     }
 
     Write-Host "✅ Restore completed to '$TargetPath'." -ForegroundColor Green

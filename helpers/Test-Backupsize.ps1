@@ -21,17 +21,13 @@ function Test-Backupsize {
         Throw "❌ Folder '$Folder' does not exist."
     }
     if ($ExcludeFile -and -not (Test-Path $ExcludeFile)) {
-        Write-Warning "⚠️ Exclude file '$ExcludeFile' not found. No exclusions applied."
+        Throw "❌ Exclude file '$ExcludeFile' does not exist."
     }
 
     # Load exclusions
     $excludePatterns = @()
     if ($ExcludeFile) {
-        if (Test-Path $ExcludeFile) {
-            $excludePatterns = Get-Content $ExcludeFile | Where-Object { $_ -and -not $_.StartsWith("#") }
-        } else {
-            Write-Warning "⚠️ Exclude file '$ExcludeFile' not found. No exclusions applied."
-        }
+        $excludePatterns = Get-Content $ExcludeFile | Where-Object { $_ -and -not $_.StartsWith("#") }
     }
 
     # Inline helper for exclusions
@@ -77,7 +73,7 @@ function Test-Backupsize {
 
     # Show large files
     if ($largeFiles.Count -gt 0) {
-        Write-Host "`n🚨 Large Files Detected:" -ForegroundColor Red
+        Write-Host "`n🚨 Large Files Detected:"
         $largeFiles | Sort-Object Length -Descending |
             Select-Object FullName, @{Name="Size (GB)"; Expression={"{0:N2}" -f ($_.Length / 1GB)}} |
             Format-Table -AutoSize
@@ -85,17 +81,19 @@ function Test-Backupsize {
 
     # Show large folders
     if ($largeFolders.Count -gt 0) {
-        Write-Host "`n🚨 Large Folders Detected:" -ForegroundColor Red
+        Write-Host "`n🚨 Large Folders Detected:"
         $largeFolders | Sort-Object {[decimal]$_.SizeGB} -Descending |
             Format-Table FullName, FileCount, SizeGB -AutoSize
     }
 
     # Prompt if large items were found
     if ($largeFiles.Count -gt 0 -or $largeFolders.Count -gt 0) {
-        Write-Host "`n❗ Large items found. Confirm to proceed." -ForegroundColor Yellow
+        Write-Host "`n❗ Large items found. Confirm to proceed."
         $response = Read-Host "Continue with backup? (y/n)"
         if ($response -ne 'y') {
-            Throw "🛑 Backup aborted by user."
+            Throw "❌ Backup aborted by user."
+        } else {
+            Write-Host "✅ Proceeding with backup..." -ForegroundColor Green
         }
     } else {
         Write-Host "`n✅ No large files or folders found. Safe to proceed." -ForegroundColor Green

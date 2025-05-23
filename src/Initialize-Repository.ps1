@@ -4,14 +4,14 @@ function Initialize-Repository {
         [Parameter(Mandatory)]
         [string]$RepoPath,
 
-        [Parameter()]
         [SecureString]$PasswordSecretName,
-
-        [Parameter()]
         [switch]$Force
     )
 
-    Write-Host "🔧 Initializing Restic repository..." -ForegroundColor Cyan
+    Write-Host "🚀 Initializing restic repository..." -ForegroundColor Cyan
+    if ($PasswordSecretName) {Write-Host "  ├─ Password secret name: $PasswordSecretName"}
+    if ($Force) {Write-Host "  ├─ Force: $Force"}
+    Write-Host "  └─ Repository path: $RepoPath"
 
     Test-Installation -App 'restic'
 
@@ -19,10 +19,9 @@ function Initialize-Repository {
         New-Item -ItemType Directory -Path $RepoPath -Force | Out-Null
     }
 
-    $configPath = Join-Path $RepoPath "config"
-    if (Test-Path $configPath) {
+    if (Test-Path (Join-Path -Path $RepoPath -ChildPath "config")) {
         if ($Force) {
-            Write-Host "⚠️  Removing existing Restic repository at '$RepoPath' due to -Force..." -ForegroundColor Yellow
+            Write-Warning "⚠️ Removing existing Restic repository at '$RepoPath' due to -Force..."
             Remove-Item -Path $RepoPath -Recurse -Force
             New-Item -ItemType Directory -Path $RepoPath -Force | Out-Null
         } else {
@@ -30,19 +29,11 @@ function Initialize-Repository {
         }
     }
 
-    # Derive default secret name from repo path if not provided
     if (-not $PasswordSecretName) {
-        $PasswordSecretName = "ResticPassword_" + ([Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($RepoPath)) -replace "[^a-zA-Z0-9]", "")
-        Write-Verbose "Derived secret name: $PasswordSecretName"
+        $PasswordSecretName = Get-DerivedSecretName -RepoPath $RepoPath
     }
 
-    $meta = @{
-        RepoPath = $RepoPath
-        Initialized = (Get-Date).ToString("u")
-        SecretName = $PasswordSecretName
-    }
-    $metaPath = [System.IO.Path]::Combine((Get-Item -Path $RepoPath -Resolve).FullName, ".restic-meta.json")
-    $meta | ConvertTo-Json -Depth 10 | Set-Content -Path $metaPath
+    Log-SecretName -RepoPath $RepoPath -SecretName $PasswordSecretName
 
     Write-Host "🔐 Saving password to SecretVault with name '$PasswordSecretName'..."
     Save-ResticPassword -Name $PasswordSecretName
@@ -56,9 +47,7 @@ function Initialize-Repository {
         Throw "❌ Could not retrieve restic password: $_"
     }
 
-    Write-Host "🗃️ Initializing Restic repository at '$RepoPath'..." -ForegroundColor Cyan
-    $originalEnv = $env:RESTIC_PASSWORD
-    $env:RESTIC_PASSWORD = $plainPassword
+    Set-ResticEnvironment -Password $plainPassword
 
     try {
         & restic init --repo "$RepoPath"
@@ -66,10 +55,33 @@ function Initialize-Repository {
             Throw "❌ Restic init failed with exit code $LASTEXITCODE."
         }
     } finally {
-        $plainPassword = $null
-        $env:RESTIC_PASSWORD = $originalEnv
-        [System.GC]::Collect()
+        Reset-ResticEnvironment
     }
 
     Write-Host "✅ Repository initialized at '$RepoPath' with secret name '$PasswordSecretName'." -ForegroundColor Green
+}
+function Log-SecretName {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [string]$RepoPath,
+
+        [Parameter(Mandatory)]
+        [string]$SecretName
+    )
+
+    $logFile = Join-Path $PSScriptRoot "initialized-repos.txt"
+    $timestamp = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'
+    $entry = @{
+        Timestamp = $timestamp
+        RepoPath  = $RepoPath
+        Secret    = $SecretName
+    } | ConvertTo-Json -Compress
+
+    try {
+        Add-Content -Path $logFile -Value $entry
+        Write-Host "🔑 Secret name logged to '$logFile'."
+    } catch {
+        Throw "❌ Failed to log secret name: $_"
+    }
 }
