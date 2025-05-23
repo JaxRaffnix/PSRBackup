@@ -33,24 +33,15 @@ function Initialize-Repository {
         $PasswordSecretName = Get-DerivedSecretName -RepoPath $RepoPath
     }
 
+    Write-Host "🔐 Saving password to SecretVault with name '$PasswordSecretName'..."
+    Save-ResticPassword -Name $PasswordSecretName -Force:$Force
+    
     Log-SecretName -RepoPath $RepoPath -SecretName $PasswordSecretName
 
-    Write-Host "🔐 Saving password to SecretVault with name '$PasswordSecretName'..."
-    Save-ResticPassword -Name $PasswordSecretName
+    Set-ResticEnvironment -RepoPath $RepoPath -PasswordSecretName $PasswordSecretName
 
     try {
-        $securePassword = Get-ResticPassword -Name $PasswordSecretName
-        $plainPassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-            [Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword)
-        )
-    } catch {
-        Throw "❌ Could not retrieve restic password: $_"
-    }
-
-    Set-ResticEnvironment -Password $plainPassword
-
-    try {
-        & restic init --repo "$RepoPath"
+        & restic init 
         if ($LASTEXITCODE -ne 0) {
             Throw "❌ Restic init failed with exit code $LASTEXITCODE."
         }
@@ -70,13 +61,13 @@ function Log-SecretName {
         [string]$SecretName
     )
 
-    $logFile = Join-Path $PSScriptRoot "initialized-repos.txt"
-    $timestamp = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'
+    $logFile = Join-Path $PSScriptRoot "initialized-repos.json"
+    $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
     $entry = @{
         Timestamp = $timestamp
         RepoPath  = $RepoPath
         Secret    = $SecretName
-    } | ConvertTo-Json -Compress
+    } | ConvertTo-Json -Depth 3
 
     try {
         Add-Content -Path $logFile -Value $entry
@@ -85,3 +76,5 @@ function Log-SecretName {
         Throw "❌ Failed to log secret name: $_"
     }
 }
+
+# Initialize-Repository -RepoPath "C:\Backup"

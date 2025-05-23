@@ -6,7 +6,7 @@ function Start-Backup {
         [Parameter(Mandatory)]
         [string]$SourcePath,
 
-        [string]$ExcludeFile = "$PSScriptRoot..\config\exclude.txt",
+        [string]$ExcludeFile = "$PSScriptRoot\..\config\exclude.txt",
 
         [string]$PasswordSecretName,
 
@@ -14,9 +14,9 @@ function Start-Backup {
         [int64]$MaxFolderSize = 10GB
     )
 
-    Write-Host "`n🔄 Starting restic backup..." -ForegroundColor Cyan
-    Write-Host "  ├─ Source path: '$SourcePath'"
+    Write-Host "🔄 Starting restic backup..." -ForegroundColor Cyan
     Write-Host "  ├─ Repository path: '$RepoPath'"
+    Write-Host "  ├─ Source path: '$SourcePath'"
     if ($ExcludeFile) {Write-Host "  ├─ Exclude file: '$ExcludeFile'"}   
     if ($PasswordSecretName) {Write-Host "  ├─ Password secret name: '$PasswordSecretName'"}  
     Write-Host "  ├─ Max file size: $MaxFileSize bytes"
@@ -46,20 +46,11 @@ function Start-Backup {
         $PasswordSecretName = Get-DerivedSecretName -RepoPath $RepoPath
     }
 
-    try {
-        $securePassword = Get-ResticPassword -Name $PasswordSecretName
-        $plainPassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-            [Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword)
-        )
-    } catch {
-        Throw "❌ Could not retrieve restic password: $_"
-    }
-
-    Set-ResticEnvironment -Password $plainPassword
+    Set-ResticEnvironment -RepoPath $RepoPath -PasswordSecretName $PasswordSecretName
 
     try {
         $BackupArgs = @(
-            "-r", $RepoPath, "backup", $SourcePath,
+            "backup", $SourcePath,
             "--exclude-caches", "--exclude-if-present", ".resticignore",
             "--skip-if-unchanged"
         )
@@ -70,17 +61,17 @@ function Start-Backup {
 
         & restic.exe @BackupArgs
         if ($LASTEXITCODE -ne 0) { Throw "❌ Backup failed (exit code $LASTEXITCODE)." }
-        Write-Host "Backup completed successfully."
+        Write-Host "📦 Backup completed successfully."
 
         Write-Host "`n🔍 Running cleanup..."
-        & restic.exe -r $RepoPath forget --prune --keep-hourly 8 --keep-daily 3 --keep-weekly 2 --keep-monthly 6 --keep-yearly 5
+        & restic.exe forget --prune --keep-hourly 8 --keep-daily 3 --keep-weekly 2 --keep-monthly 6 --keep-yearly 5
         if ($LASTEXITCODE -ne 0) { Throw "❌ Forget failed (exit code $LASTEXITCODE)." }
 
-        & restic.exe -r $RepoPath cache --cleanup
+        & restic.exe cache --cleanup
         if ($LASTEXITCODE -ne 0) { Throw "❌ Cache cleanup failed (exit code $LASTEXITCODE)." }
 
         Write-Host "`n🔍 Running backup integrity check..."
-        & restic.exe -r $RepoPath check --read-data
+        & restic.exe check --read-data
         if ($LASTEXITCODE -ne 0) { Throw "❌ Backup integrity check failed (exit code $LASTEXITCODE)." }
 
         Write-Host "`n✅ Backup completed successfully." -ForegroundColor Green

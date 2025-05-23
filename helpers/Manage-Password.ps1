@@ -10,7 +10,7 @@ function Save-ResticPassword {
     }
 
     $secStr = Read-Host "Enter Restic password" -AsSecureString
-    Set-Secret -Name $Name -Secret $secStr -Force:$Force
+    Set-Secret -Name $Name -Secret $secStr
 }
 
 function Get-ResticPassword {
@@ -37,18 +37,34 @@ function Get-DerivedSecretName {
 
 function Set-ResticEnvironment {
     param (
+
         [Parameter(Mandatory)]
-        [SecureString]$Password
+        [string]$PasswordSecretName,
+
+        [Parameter(Mandatory)]
+        [string]$RepoPath
     )
 
+    try {
+        $securePassword = Get-ResticPassword -Name $PasswordSecretName
+        $plainPassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+            [Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword)
+        )
+    } catch {
+        Throw "❌ Could not retrieve restic password: $_"
+    }
+
     $script:originalResticPassword = $env:RESTIC_PASSWORD
-    $env:RESTIC_PASSWORD = $Password
+    $env:RESTIC_PASSWORD = $plainPassword
+
     $env:RESTIC_REPOSITORY = $RepoPath
 }
 
 function Reset-ResticEnvironment {
+    if ($script:originalResticPassword) {
+        $env:RESTIC_PASSWORD = $script:originalResticPassword
+    }
     Remove-Item Env:RESTIC_REPOSITORY -ErrorAction SilentlyContinue
-    $env:RESTIC_PASSWORD = $script:originalResticPassword
     [System.GC]::Collect()
     [System.GC]::WaitForPendingFinalizers()
 }

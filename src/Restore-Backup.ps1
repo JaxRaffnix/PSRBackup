@@ -25,23 +25,14 @@ function Restore-ResticBackup {
         $PasswordSecretName = Get-DerivedSecretName -RepoPath $RepoPath
     }
 
-    try {
-        $securePassword = Get-ResticPassword -Name $PasswordSecretName
-        $plainPassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-            [Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword)
-        )
-    } catch {
-        Throw "❌ Could not retrieve restic password: $_"
-    }
-
-    Set-ResticEnvironment -Password $plainPassword
+    Set-ResticEnvironment -RepoPath $RepoPath -PasswordSecretName $PasswordSecretName
 
     try {
         if (-not (Test-Path $TargetPath)) {
             New-Item -ItemType Directory -Path $TargetPath -Force | Out-Null
         }
 
-        & restic restore $SnapshotId --repo $RepoPath --target $TargetPath --path $SubPath
+        & restic restore $SnapshotId --target $TargetPath --path $SubPath
         if ($LASTEXITCODE -ne 0) {
             Throw "❌ Restic restore failed with exit code $LASTEXITCODE."
         }

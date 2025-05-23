@@ -12,7 +12,7 @@ function Test-Backupsize {
         [int64]$MaxFolderSize 
     )
 
-    Write-Host "`n🔍 Scanning '$Folder'" -ForegroundColor Cyan
+    Write-Host "`n🔍 Scanning '$Folder' for large files" -ForegroundColor Cyan
     Write-Host "  ├─ File threshold: $($MaxFileSize / 1MB) MB"
     Write-Host "  ├─ Folder threshold: $($MaxFolderSize / 1GB) GB"
     Write-Host "  └─ Exclude file: '$ExcludeFile'"
@@ -44,7 +44,7 @@ function Test-Backupsize {
         return $false
     }
 
-    Write-Host "`n📦 Gathering file and folder info..."
+    # Write-Host "📦 Gathering file and folder info..."
 
     # Collect all files and dirs
     $allFiles = Get-ChildItem $Folder -Recurse -File -Force
@@ -73,7 +73,7 @@ function Test-Backupsize {
 
     # Show large files
     if ($largeFiles.Count -gt 0) {
-        Write-Host "`n🚨 Large Files Detected:"
+        Write-Host "🚨 Large Files Detected:"
         $largeFiles | Sort-Object Length -Descending |
             Select-Object FullName, @{Name="Size (GB)"; Expression={"{0:N2}" -f ($_.Length / 1GB)}} |
             Format-Table -AutoSize
@@ -81,14 +81,14 @@ function Test-Backupsize {
 
     # Show large folders
     if ($largeFolders.Count -gt 0) {
-        Write-Host "`n🚨 Large Folders Detected:"
+        Write-Host "🚨 Large Folders Detected:"
         $largeFolders | Sort-Object {[decimal]$_.SizeGB} -Descending |
             Format-Table FullName, FileCount, SizeGB -AutoSize
     }
 
     # Prompt if large items were found
     if ($largeFiles.Count -gt 0 -or $largeFolders.Count -gt 0) {
-        Write-Host "`n❗ Large items found. Confirm to proceed."
+        Write-Host "❗ Large items found. Confirm to proceed."
         $response = Read-Host "Continue with backup? (y/n)"
         if ($response -ne 'y') {
             Throw "❌ Backup aborted by user."
@@ -96,6 +96,6 @@ function Test-Backupsize {
             Write-Host "✅ Proceeding with backup..." -ForegroundColor Green
         }
     } else {
-        Write-Host "`n✅ No large files or folders found. Safe to proceed." -ForegroundColor Green
+        Write-Host "✅ No large files or folders found. Safe to proceed." -ForegroundColor Green
     }
 }
