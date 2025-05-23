@@ -40,6 +40,7 @@ Initialize-Repository -RepoPath "D:\Backups\ResticRepo"
 ```
 
 #### Start a Backup
+Excludes can be handled in the exclude file or by adding the file `.resticignore` to a directory.
 
 ```powershell
 Start-Backup -RepoPath "D:\Backups\ResticRepo" -SourcePath "C:\Users\Jax\Documents" -ExcludeFile "config\exclude.txt"

@@ -1,39 +1,51 @@
-# Check if winget is available
-if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-    Write-Error "winget is not installed or not available in PATH. Please install winget first."
-    exit 1
+.PSScriptRoot\..\helpers\Test-Installation.ps1
+
+$ModuleName = "PSRBackup"
+
+Write-Host "🔧 Initializing Module $ModuleName..." -ForegroundColor Cyan
+
+Test-Installation -App winget 
+
+Write-Host "📦 Installing restic..."
+
+$ResticPackageId = "Restic.Restic"
+$resticInstalled = winget list --id $ResticPackageId | Select-String $ResticPackageId
+
+if (-not $resticInstalled) {
+    winget install --id $ResticPackageId `
+                    --silent `
+                    --accept-source-agreements `
+                    --accept-package-agreements `
+                    --disable-interactivity `
+                    --force
+
+    if ($LASTEXITCODE -ne 0) {
+        Throw "❌ Failed to install restic."
+    }
+
+    Write-Host "✅ Restic installed successfully."
+} else {
+    Write-Host "✅ Restic already installed."
 }
 
-$ResticName = "restic.restic"
-
-# Check if restic is already installed
-$resticInstalled = winget list --id $ResticName | Select-String $ResticName
-
-if ($resticInstalled) {
-    # Write-Host "restic is already installed."
-} else {
-    Write-Host "Installing restic using winget..."
-    winget install --id $ResticName --silent --accept-source-agreements --accept-package-agreements --disable-interactivity --force 
-
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "restic installed successfully."
+Write-Host "🔍 Ensuring SecretManagement modules are available..."
+foreach ($module in @("Microsoft.PowerShell.SecretManagement", "Microsoft.PowerShell.SecretStore")) {
+    if (-not (Get-Module -ListAvailable -Name $module)) {
+        Write-Host "📦 Installing module '$module'..." -ForegroundColor Cyan
+        Install-Module -Name $module -Scope CurrentUser -Force
     } else {
-        Throw "Failed to install restic."
+        Write-Host "✅ Module '$module' is already available."
     }
 }
 
-if (-not (Get-Module -ListAvailable -Name Microsoft.PowerShell.SecretManagement)) {
-    Install-Module Microsoft.PowerShell.SecretManagement -Scope CurrentUser -Force
-}
-if (-not (Get-Module -ListAvailable -Name Microsoft.PowerShell.SecretStore)) {
-    Install-Module Microsoft.PowerShell.SecretStore -Scope CurrentUser -Force
-}
+Write-Host "📥 Importing modules..."
+Import-Module Microsoft.PowerShell.SecretManagement -Force
+Import-Module Microsoft.PowerShell.SecretStore -Force
 
-# Check if this is necsessary
-Import-Module Microsoft.PowerShell.SecretManagement
-Import-Module Microsoft.PowerShell.SecretStore
-
-
-if (-not (Get-SecretVault -Name ResticVault -ErrorAction SilentlyContinue)) {
-    Register-SecretVault -Name ResticVault -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault
+Write-Host "🔐 Ensuring vault '$VaultName' is registered..."
+if (-not (Get-SecretVault -Name $VaultName -ErrorAction SilentlyContinue)) {
+    Register-SecretVault -Name $VaultName -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault
+    Write-Host "✅ Secret vault '$VaultName' registered." -ForegroundColor Green
+} else {
+    Write-Host "✅ Vault '$VaultName' already registered."
 }
