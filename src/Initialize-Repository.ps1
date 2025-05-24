@@ -4,7 +4,7 @@ function Initialize-Repository {
         [Parameter(Mandatory)]
         [string]$RepoPath,
 
-        [string]$PasswordSecretName,
+        [SecureString]$PasswordSecretName,
         [switch]$Force
     )
 
@@ -34,9 +34,9 @@ function Initialize-Repository {
     }
 
     Write-Host "🔐 Saving password to SecretVault with name '$PasswordSecretName'..."
-    Create-ResticPassword -Name $PasswordSecretName -Force:$Force
+    Set-ResticPassword -Name $PasswordSecretName -Force:$Force
     
-    Register-ResticSecretInfo -RepoPath $RepoPath -SecretName $PasswordSecretName
+    Register-ResticSecretInfo -RepoPath $RepoPath -PasswordSecretName $PasswordSecretName
 
     Set-ResticEnvironment -RepoPath $RepoPath -PasswordSecretName $PasswordSecretName
 
@@ -57,18 +57,25 @@ function Register-ResticSecretInfo {
         [string]$RepoPath,
 
         [Parameter(Mandatory)]
-        [string]$SecretName,
+        [SecureString]$PasswordSecretName,
 
-        [string]$LogPath = "$env:LOCALAPPDATA\restic-repo-map.json"
+        [string]$LogPath = "$env:LOCALAPPDATA\restic-repo-info.json"
     )
 
+    if ($PasswordSecretName -is [SecureString]) {
+    $PasswordSecretName = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($PasswordSecretName)
+    )
+    }
+
+    $repoKey = [System.IO.Path]::GetFileName($RepoPath.TrimEnd('\', '/'))
+
     Write-Host "📝 Registering restic secret info..." -ForegroundColor Cyan
-    Write-Host "  ├─ Repository path: '$RepoPath'"
-    Write-Host "  ├─ Secret name: '$SecretName'"
+    Write-Host "  ├─ Repository name: '$repoKey'"
+    Write-Host "  ├─ Secret name: '$PasswordSecretName'"
     Write-Host "  └─ Log path: '$LogPath'"
 
     if (-not (Test-Path $LogPath)) {
-        # Create an empty JSON object if it doesn't exist
         '{}' | Out-File -Encoding UTF8 -FilePath $LogPath
     }
 
@@ -78,16 +85,31 @@ function Register-ResticSecretInfo {
         Throw "❌ Failed to read JSON log at '$LogPath': $_"
     }
 
-    $repoKey = [System.IO.Path]::GetFileName($RepoPath.TrimEnd('\', '/'))
 
-    $json.$repoKey = @{
+    # Decrypt the SecureString to plain text
+    # $securePassword = Get-ResticPassword -Name $PasswordSecretName
+    # $plainPassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+    #     [Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword)
+    # )
+
+    $repoInfo = [PSCustomObject]@{
         path      = $RepoPath
-        timestamp = (Get-Date).ToString("o")
-        secret    = $SecretName
+        timestamp = (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+        secret    = @{
+            name  = $PasswordSecretName
+            vault = (Get-SecretVault | Where-Object { $_.IsDefault }).Name
+            # value = $plainPassword
+        }
     }
 
-    # Save the updated JSON
+    if ($json.PSObject.Properties.Name -notcontains $repoKey) {
+        $json | Add-Member -MemberType NoteProperty -Name $repoKey -Value $repoInfo
+    } else {
+        $json.$repoKey = $repoInfo
+    }
+
     $json | ConvertTo-Json -Depth 3 | Set-Content -Encoding UTF8 -Path $LogPath
 
     Write-Host "✅ Logged restic secret info for '$repoKey' to '$LogPath'." -ForegroundColor Green
 }
+

@@ -54,7 +54,7 @@ Restore-Backup -RepoPath "D:\Backups\ResticRepo" -TargetPath "C:\Restore"
 
 #### Manage Passwords
 
-- Save a password: `Create-ResticPassword -Name "ResticPassword_MyRepo"`
+- Save a password: `Set-ResticPassword -Name "ResticPassword_MyRepo"`
 - Retrieve a password: `Get-ResticPassword -Name "ResticPassword_MyRepo"`
 
 ## File Structure
@@ -71,6 +71,8 @@ Edit [`config/exclude.txt`](config/exclude.txt) to add patterns (one per line) f
 
 
 ## TO DO
+
+**Fix secure string errors. PasswordSecretName should only be a simple string!**
 
 - Kalender Backup?
 - Kontakte Backup?

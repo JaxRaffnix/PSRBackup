@@ -9,7 +9,7 @@ function Restore-Backup {
 
         [string]$SnapshotId = "latest",
         # [string]$SubPath = ,
-        [string]$PasswordSecretName
+        [SecureString]$PasswordSecretName
     )
 
     Write-Host "🔄 Restoring backup..." -ForegroundColor Cyan

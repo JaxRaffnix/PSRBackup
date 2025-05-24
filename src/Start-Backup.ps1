@@ -8,7 +8,7 @@ function Start-Backup {
 
         [string]$ExcludeFile = "$PSScriptRoot\..\config\exclude.txt",
 
-        [string]$PasswordSecretName,
+        [SecureString]$PasswordSecretName,
 
         [int64]$MaxFileSize = 100MB,
         [int64]$MaxFolderSize = 10GB

@@ -1,5 +1,5 @@
 
-function Create-ResticPassword {
+function Set-ResticPassword {
     param (
         [string]$Name = "ResticPassword",
         [switch]$Force
@@ -48,7 +48,7 @@ function Get-DerivedSecretName {
     )
 
     $encoded = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($RepoPath))
-    return "ResticPassword_" + ($encoded -replace "[^a-zA-Z0-9]", "")
+    return ConvertTo-SecureString ("ResticPassword_" + ($encoded -replace "[^a-zA-Z0-9]", "")) -AsPlainText -Force
 }
 
 function Set-ResticEnvironment {
@@ -56,7 +56,7 @@ function Set-ResticEnvironment {
         [Parameter(Mandatory)]
         [string]$RepoPath,
 
-        [string]$PasswordSecretName
+        [SecureString]$PasswordSecretName
     )
 
     if (-not $PasswordSecretName) {
