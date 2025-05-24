@@ -11,7 +11,7 @@ function Restore-Backup {
         [string]$Key
     )
 
-    Write-Host "🔄 Restoring backup..." -ForegroundColor Cyan
+    Write-Host "♻️ Restoring backup..." -ForegroundColor Cyan
     Write-Host "  ├─ Repository path: '$RepoPath'"
     Write-Host "  ├─ Target path: '$TargetPath'"
     if ($Key) {Write-Host "  ├─ Password secret name: '$Key'"}

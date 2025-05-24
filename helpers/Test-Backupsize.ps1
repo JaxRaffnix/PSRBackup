@@ -12,7 +12,8 @@ function Test-Backupsize {
         [int64]$MaxFolderSize 
     )
 
-    Write-Host "`n🔍 Scanning '$Folder' for large files" -ForegroundColor Cyan
+    Write-Host "`n🔍 Scanning Source for large files" -ForegroundColor Cyan
+    Write-Host "  ├─ Source folder: '$Folder'"
     Write-Host "  ├─ File threshold: $($MaxFileSize / 1MB) MB"
     Write-Host "  ├─ Folder threshold: $($MaxFolderSize / 1GB) GB"
     Write-Host "  └─ Exclude file: '$ExcludeFile'"
@@ -88,7 +89,7 @@ function Test-Backupsize {
 
     # Prompt if large items were found
     if ($largeFiles.Count -gt 0 -or $largeFolders.Count -gt 0) {
-        Write-Host "❗ Large items found. Confirm to proceed."
+        Write-Warning "⚠️ Large items found. Confirm to proceed."
         $response = Read-Host "Continue with backup? (y/n)"
         if ($response -ne 'y') {
             Throw "❌ Backup aborted by user."
@@ -98,5 +99,5 @@ function Test-Backupsize {
     } else {
         Write-Host "✅ No large files or folders found. Safe to proceed." -ForegroundColor Green
     }
-    Write-Host ""
+    # Write-Host ""
 }

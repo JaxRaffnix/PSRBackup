@@ -62,10 +62,11 @@ function Start-Backup {
         & restic.exe @BackupArgs
         if ($LASTEXITCODE -ne 0) { Throw "❌ Backup failed (exit code $LASTEXITCODE)." }
 
-        Write-Host "`n🔍 Running cleanup..."
+        Write-Host "`n🗑️ Deleting redundant snapshots..."
         & restic.exe forget --prune --keep-hourly 8 --keep-daily 7 --keep-weekly 2 --keep-monthly 6 --keep-yearly 5
         if ($LASTEXITCODE -ne 0) { Throw "❌ Forget failed (exit code $LASTEXITCODE)." }
 
+        Write-Host "`n🧹 Running cache cleanup..."
         & restic.exe cache --cleanup
         if ($LASTEXITCODE -ne 0) { Throw "❌ Cache cleanup failed (exit code $LASTEXITCODE)." }
 

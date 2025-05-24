@@ -8,7 +8,7 @@ function Initialize-Repository {
         [switch]$Force
     )
 
-    Write-Host "🚀 Initializing restic repository..." -ForegroundColor Cyan
+    Write-Host "`n🚀 Initializing restic repository..." -ForegroundColor Cyan
     if ($Key) {Write-Host "  ├─ Password key: '$Key'"}
     if ($Force) {Write-Host "  ├─ Force: $Force"}
     Write-Host "  └─ Repository path: '$RepoPath'"
@@ -31,11 +31,13 @@ function Initialize-Repository {
 
     if (-not $Key) {
         $Key = Get-DerivedKey -RepoPath $RepoPath
+        Write-Host "🔑 Generated key from path name: '$Key'"
     }
-    Set-ResticPassword -Name $Key -Force:$Force
+    Set-RepositoryPassword -Key $Key -Force:$Force
     Register-KeyMapping -RepoPath $RepoPath -Key $Key
     Set-ResticEnvironment -RepoPath $RepoPath -Key $Key
 
+    Write-Host "📁 Creating repository..."
     try {
         & restic init 
         if ($LASTEXITCODE -ne 0) {
@@ -57,16 +59,18 @@ function Register-KeyMapping {
         [Parameter(Mandatory)]
         [string]$Key,
 
-        [string]$LogPath = "$env:LOCALAPPDATA\restic-repo-info.json"
+        [string]$LogPath = "$env:LOCALAPPDATA\PSRBackup Repository Information.json"
     )
 
-    $repoKey = [System.IO.Path]::GetFileName($RepoPath.TrimEnd('\', '/'))
 
-    Write-Host "📝 Registering password key for restic repository..." -ForegroundColor Cyan
-    Write-Host "  ├─ Repository name: '$repoKey'"
+
+    Write-Host "`n📝 Logging password key for restic repository..." -ForegroundColor Cyan
     Write-Host "  ├─ Repository path: '$RepoPath'"
     Write-Host "  ├─ Key: '$Key'"
     Write-Host "  └─ Log path: '$LogPath'"
+
+    $repoKey = [System.IO.Path]::GetFileName($RepoPath.TrimEnd('\', '/'))
+    Write-Host "📦 Derived repository name: '$repoKey'"
 
     if (-not (Test-Path $LogPath)) {
         '{}' | Out-File -Encoding UTF8 -FilePath $LogPath
@@ -83,8 +87,9 @@ function Register-KeyMapping {
         path      = $RepoPath
         timestamp = (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
         key    = @{
-            name  = $Key
             vault = (Get-SecretVault | Where-Object { $_.IsDefault }).Name
+            name  = $Key
+
         }
     }
 

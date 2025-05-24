@@ -7,9 +7,9 @@ function Set-RepositoryPassword {
         [switch]$Force
     )
 
-    Write-Host "🔑 Genrating password for restic repository..." -ForegroundColor Cyan
+    Write-Host "`n🔐 Genrating password for restic repository..." -ForegroundColor Cyan
     if ($Force) {Write-Host "  ├─ Force: $Force"}
-    Write-Host "  └─ Key name: '$Key'"
+    Write-Host "  └─ Key: '$Key'"
 
     if ((Get-SecretInfo -Name $Key -ErrorAction SilentlyContinue) -and -not $Force) {
         Throw "❌ A password with the key '$Key' already exists. Use -Force to overwrite."
@@ -24,7 +24,7 @@ function Set-RepositoryPassword {
     $SecurePassword = ConvertTo-SecureString $plainPassword -AsPlainText -Force
     Set-Secret -Name $Key -Secret $SecurePassword
 
-    Write-Host "Created a secure password and stored it." -ForegroundColor Green
+    Write-Host "✅ Created a secure password and stored it." -ForegroundColor Green
 }
 
 
@@ -38,7 +38,7 @@ function Get-RepositoryPassword {
         Throw "❌ No password found for the key '$Key'."
     }
 
-    return Get-Secret -Name $Name
+    return Get-Secret -Name $Key
 }
 
 function Get-DerivedKey {
@@ -65,7 +65,7 @@ function Set-ResticEnvironment {
     }
 
     try {
-        $securePassword = Get-RepositoryPassword -Name $Key
+        $securePassword = Get-RepositoryPassword -Key $Key
         $plainPassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
             [Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword)
         )
@@ -78,7 +78,7 @@ function Set-ResticEnvironment {
 
     $env:RESTIC_REPOSITORY = $RepoPath
 
-    Write-Host "🔐 Environment variables set for restic repository at '$RepoPath' with key $Keys."
+    Write-Host "🔐 Environment variables set for restic repository at '$RepoPath' with key $Key."
 }
 
 

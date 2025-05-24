@@ -2,11 +2,12 @@
 
 $ModuleName = Split-Path (Split-Path $PSScriptRoot -Parent) -Leaf
 
-Write-Host "🔧 Initializing Module $ModuleName..." -ForegroundColor Cyan
+Write-Host "🚀 Initializing Module..." -ForegroundColor Cyan
+Write-Host "  └─ Module name: '$ModuleName'"
 
 Test-Installation -App winget 
 
-Write-Host "📦 Installing restic..."
+Write-Host "⬇️ Installing restic..."
 
 $ResticPackageId = "Restic.Restic"
 $resticInstalled = winget list --id $ResticPackageId | Select-String $ResticPackageId
@@ -28,10 +29,10 @@ if (-not $resticInstalled) {
     Write-Host "✅ Restic already installed."
 }
 
-Write-Host "🔍 Installing modules SecretManagement and SecretStore..."
+Write-Host "⬇️ Installing modules SecretManagement and SecretStore..."
 foreach ($module in @("Microsoft.PowerShell.SecretManagement", "Microsoft.PowerShell.SecretStore")) {
     if (-not (Get-Module -ListAvailable -Name $module)) {
-        Write-Host "📦 Installing module '$module'..." -ForegroundColor Cyan
+        Write-Host "⬇️ Installing module '$module'..." 
         Install-Module -Name $module -Scope CurrentUser -Force
     } else {
         Write-Host "✅ Module '$module' is already available."
