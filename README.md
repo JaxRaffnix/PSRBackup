@@ -72,7 +72,6 @@ Edit [`config/exclude.txt`](config/exclude.txt) to add patterns (one per line) f
 
 ## TO DO
 
-**Fix secure string errors. PasswordSecretName should only be a simple string!**
 
 - Kalender Backup?
 - Kontakte Backup?

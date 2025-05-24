@@ -8,7 +8,7 @@ function Start-Backup {
 
         [string]$ExcludeFile = "$PSScriptRoot\..\config\exclude.txt",
 
-        [SecureString]$PasswordSecretName,
+        [string]$Key,
 
         [int64]$MaxFileSize = 100MB,
         [int64]$MaxFolderSize = 10GB
@@ -16,7 +16,7 @@ function Start-Backup {
 
     Write-Host "🔄 Starting restic backup..." -ForegroundColor Cyan
     if ($ExcludeFile) {Write-Host "  ├─ Exclude file: '$ExcludeFile'"}   
-    if ($PasswordSecretName) {Write-Host "  ├─ Password secret name: '$PasswordSecretName'"}  
+    if ($Key) {Write-Host "  ├─ Password secret name: '$Key'"}  
     Write-Host "  ├─ Repository path: '$RepoPath'"
     Write-Host "  └─ Source path: '$SourcePath'"
     
@@ -40,15 +40,17 @@ function Start-Backup {
         Throw "❌ Aborted due to large file/folder check: $_"
     }
 
-    if (-not $PasswordSecretName) {
-        $PasswordSecretName = Get-DerivedSecretName -RepoPath $RepoPath
+    if (-not $Key) {
+        $Key = Get-DerivedKey -RepoPath $RepoPath
     }
-    Set-ResticEnvironment -RepoPath $RepoPath -PasswordSecretName $PasswordSecretName
+    Set-ResticEnvironment -RepoPath $RepoPath -Key $Key
 
+    $ResticIgnoreFileName = ".resticignore"
     try {
         $BackupArgs = @(
             "backup", $SourcePath,
-            "--exclude-caches", "--exclude-if-present", ".resticignore",
+            "--exclude-if-present", $ResticIgnoreFileName,
+            "--exclude-caches", 
             "--skip-if-unchanged"
         )
 
@@ -56,9 +58,9 @@ function Start-Backup {
             $BackupArgs += @("--iexclude-file", $ExcludeFile)
         }
 
+        Write-Host "`n📦 Running backup..."
         & restic.exe @BackupArgs
         if ($LASTEXITCODE -ne 0) { Throw "❌ Backup failed (exit code $LASTEXITCODE)." }
-        Write-Host "📦 Backup completed successfully."
 
         Write-Host "`n🔍 Running cleanup..."
         & restic.exe forget --prune --keep-hourly 8 --keep-daily 7 --keep-weekly 2 --keep-monthly 6 --keep-yearly 5

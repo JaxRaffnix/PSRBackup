@@ -4,12 +4,12 @@ function Initialize-Repository {
         [Parameter(Mandatory)]
         [string]$RepoPath,
 
-        [SecureString]$PasswordSecretName,
+        [string]$Key,
         [switch]$Force
     )
 
     Write-Host "🚀 Initializing restic repository..." -ForegroundColor Cyan
-    if ($PasswordSecretName) {Write-Host "  ├─ Password secret name: '$PasswordSecretName'"}
+    if ($Key) {Write-Host "  ├─ Password key: '$Key'"}
     if ($Force) {Write-Host "  ├─ Force: $Force"}
     Write-Host "  └─ Repository path: '$RepoPath'"
 
@@ -29,16 +29,12 @@ function Initialize-Repository {
         }
     }
 
-    if (-not $PasswordSecretName) {
-        $PasswordSecretName = Get-DerivedSecretName -RepoPath $RepoPath
+    if (-not $Key) {
+        $Key = Get-DerivedKey -RepoPath $RepoPath
     }
-
-    Write-Host "🔐 Saving password to SecretVault with name '$PasswordSecretName'..."
-    Set-ResticPassword -Name $PasswordSecretName -Force:$Force
-    
-    Register-ResticSecretInfo -RepoPath $RepoPath -PasswordSecretName $PasswordSecretName
-
-    Set-ResticEnvironment -RepoPath $RepoPath -PasswordSecretName $PasswordSecretName
+    Set-ResticPassword -Name $Key -Force:$Force
+    Register-KeyMapping -RepoPath $RepoPath -Key $Key
+    Set-ResticEnvironment -RepoPath $RepoPath -Key $Key
 
     try {
         & restic init 
@@ -49,30 +45,27 @@ function Initialize-Repository {
         Reset-ResticEnvironment
     }
 
-    Write-Host "✅ Repository initialized at '$RepoPath' with secret name." -ForegroundColor Green
+    Write-Host "✅ Repository initialized." -ForegroundColor Green
 }
-function Register-ResticSecretInfo {
+
+
+function Register-KeyMapping {
     param (
         [Parameter(Mandatory)]
         [string]$RepoPath,
 
         [Parameter(Mandatory)]
-        [SecureString]$PasswordSecretName,
+        [string]$Key,
 
         [string]$LogPath = "$env:LOCALAPPDATA\restic-repo-info.json"
     )
 
-    if ($PasswordSecretName -is [SecureString]) {
-    $PasswordSecretName = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($PasswordSecretName)
-    )
-    }
-
     $repoKey = [System.IO.Path]::GetFileName($RepoPath.TrimEnd('\', '/'))
 
-    Write-Host "📝 Registering restic secret info..." -ForegroundColor Cyan
+    Write-Host "📝 Registering password key for restic repository..." -ForegroundColor Cyan
     Write-Host "  ├─ Repository name: '$repoKey'"
-    Write-Host "  ├─ Secret name: '$PasswordSecretName'"
+    Write-Host "  ├─ Repository path: '$RepoPath'"
+    Write-Host "  ├─ Key: '$Key'"
     Write-Host "  └─ Log path: '$LogPath'"
 
     if (-not (Test-Path $LogPath)) {
@@ -86,19 +79,12 @@ function Register-ResticSecretInfo {
     }
 
 
-    # Decrypt the SecureString to plain text
-    # $securePassword = Get-ResticPassword -Name $PasswordSecretName
-    # $plainPassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-    #     [Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword)
-    # )
-
     $repoInfo = [PSCustomObject]@{
         path      = $RepoPath
         timestamp = (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
-        secret    = @{
-            name  = $PasswordSecretName
+        key    = @{
+            name  = $Key
             vault = (Get-SecretVault | Where-Object { $_.IsDefault }).Name
-            # value = $plainPassword
         }
     }
 
@@ -110,6 +96,5 @@ function Register-ResticSecretInfo {
 
     $json | ConvertTo-Json -Depth 3 | Set-Content -Encoding UTF8 -Path $LogPath
 
-    Write-Host "✅ Logged restic secret info for '$repoKey' to '$LogPath'." -ForegroundColor Green
+    Write-Host "✅ Logged password key to logfile." -ForegroundColor Green
 }
-

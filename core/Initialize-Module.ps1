@@ -1,6 +1,6 @@
 .$PSScriptRoot\..\helpers\Test-Installation.ps1
 
-$ModuleName = "PSRBackup"
+$ModuleName = Split-Path (Split-Path $PSScriptRoot -Parent) -Leaf
 
 Write-Host "🔧 Initializing Module $ModuleName..." -ForegroundColor Cyan
 
@@ -58,4 +58,4 @@ if (-not (Get-SecretVault -Name $VaultName -ErrorAction SilentlyContinue)) {
     Write-Host "✅ Vault '$VaultName' already registered."
 }
 
-Write-Host "Initialized module $ModuleName successfully." -ForegroundColor Green
+Write-Host "Initialized module successfully." -ForegroundColor Green

@@ -8,23 +8,21 @@ function Restore-Backup {
         [string]$TargetPath,
 
         [string]$SnapshotId = "latest",
-        # [string]$SubPath = ,
-        [SecureString]$PasswordSecretName
+        [string]$Key
     )
 
     Write-Host "🔄 Restoring backup..." -ForegroundColor Cyan
     Write-Host "  ├─ Repository path: '$RepoPath'"
-    Write-Host "  └─ Target path: '$TargetPath'"
-    if ($PasswordSecretName) {Write-Host "  ├─ Password secret name: '$PasswordSecretName'"}
-    Write-Host "  ├─ Snapshot ID: '$SnapshotId'"
-    Write-Host "  └─ Subpath: '$SubPath'"
+    Write-Host "  ├─ Target path: '$TargetPath'"
+    if ($Key) {Write-Host "  ├─ Password secret name: '$Key'"}
+    Write-Host "  └─ Snapshot ID: '$SnapshotId'"
     
     Test-Installation -App 'restic'
 
-    if (-not $PasswordSecretName) {
-        $PasswordSecretName = Get-DerivedSecretName -RepoPath $RepoPath
+    if (-not $Key) {
+        $Key = Get-DerivedKey -RepoPath $RepoPath
     }
-    Set-ResticEnvironment -RepoPath $RepoPath -PasswordSecretName $PasswordSecretName
+    Set-ResticEnvironment -RepoPath $RepoPath -Key $Key
 
     try {
         if (-not (Test-Path $TargetPath)) {
@@ -32,7 +30,6 @@ function Restore-Backup {
         }
 
         & restic restore $SnapshotId --target $TargetPath 
-        # --path $SubPath
         if ($LASTEXITCODE -ne 0) {
             Throw "❌ Restic restore failed with exit code $LASTEXITCODE."
         }
@@ -40,5 +37,5 @@ function Restore-Backup {
         Reset-ResticEnvironment
     }
 
-    Write-Host "✅ Restore completed to '$TargetPath'." -ForegroundColor Green
+    Write-Host "✅ Restore completed." -ForegroundColor Green
 }

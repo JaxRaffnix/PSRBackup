@@ -1,4 +1,6 @@
-New-ModuleManifest -Path .\PSRBackup.psd1 `
+$ModuleName = Split-Path (Split-Path $PSScriptRoot -Parent) -Leaf
+
+New-ModuleManifest -Path .\$ModuleName.psd1 `
     -RootModule 'PSRBackup.psm1' `
     -ModuleVersion '1.0.0' `
     -Author 'Jan Hoegen' `
