@@ -52,6 +52,7 @@ function Backup-Thunderbird {
         }
     }
 
+    # TODO: is a MIR mirror really the best for restoring? a temporary profile might get deleted
     $robocopyArgs = @(
         $SourcePath,
         $TargetPath,

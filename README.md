@@ -57,11 +57,51 @@ Edit [`config/exclude.txt`](config/exclude.txt) to add patterns (one per line) f
 
 ## TO DO
 
+- calender und kontake backup?
+
 - 🗒️ OneNote Backup
 - 🎮 Playnite Backup: https://api.playnite.link/docs/manual/library/backup.html
 - 🖥️ NVIDIA Profile Backup: profile inspector
-- 📨 Thunderbird Backup
 - Taskbar settings: C:\Users\Jax\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar
+
+### Automate script execution
+
+- create a main.ps1 file that runs with personal configurations
+- create a scheduled task
+- use a burnt toast notification
+- check for connected volume
+```
+$desiredLabel = "MyBackupDrive"
+$drive = Get-Volume | Where-Object { $_.FileSystemLabel -eq $desiredLabel }
+
+if ($drive) {
+    Write-Host "External backup drive '$desiredLabel' connected at $($drive.DriveLetter):"
+    # Start backup
+} else {
+    Write-Warning "Backup drive '$desiredLabel' not found."
+}
+```
+
+- use a loop in the scheduled task
+```
+$driveLetter = "E:"
+$maxWaitMinutes = 30
+$intervalSeconds = 10
+$elapsed = 0
+
+while ($elapsed -lt ($maxWaitMinutes * 60)) {
+    if (Test-Path $driveLetter) {
+        Write-Host "Drive found. Starting backup..."
+        # Call backup here
+        break
+    }
+    Start-Sleep -Seconds $intervalSeconds
+    $elapsed += $intervalSeconds
+}
+if ($elapsed -ge ($maxWaitMinutes * 60)) {
+    Write-Warning "External drive not connected after waiting $maxWaitMinutes minutes. Backup aborted."
+}
+```
 
 ## Emoji Legend
 
