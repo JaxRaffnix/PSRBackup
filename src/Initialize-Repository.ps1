@@ -34,9 +34,9 @@ function Initialize-Repository {
     }
 
     Write-Host "🔐 Saving password to SecretVault with name '$PasswordSecretName'..."
-    Save-ResticPassword -Name $PasswordSecretName -Force:$Force
+    Create-ResticPassword -Name $PasswordSecretName -Force:$Force
     
-    Log-SecretName -RepoPath $RepoPath -SecretName $PasswordSecretName
+    Register-ResticSecretInfo -RepoPath $RepoPath -SecretName $PasswordSecretName
 
     Set-ResticEnvironment -RepoPath $RepoPath -PasswordSecretName $PasswordSecretName
 
@@ -49,32 +49,45 @@ function Initialize-Repository {
         Reset-ResticEnvironment
     }
 
-    Write-Host "✅ Repository initialized at '$RepoPath' with secret name '$PasswordSecretName'." -ForegroundColor Green
+    Write-Host "✅ Repository initialized at '$RepoPath' with secret name." -ForegroundColor Green
 }
-function Log-SecretName {
-    [CmdletBinding()]
+function Register-ResticSecretInfo {
     param (
         [Parameter(Mandatory)]
         [string]$RepoPath,
 
         [Parameter(Mandatory)]
-        [string]$SecretName
+        [string]$SecretName,
+
+        [string]$LogPath = "$env:LOCALAPPDATA\restic-repo-map.json"
     )
 
-    $logFile = Join-Path $PSScriptRoot "initialized-repos.json"
-    $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
-    $entry = @{
-        Timestamp = $timestamp
-        RepoPath  = $RepoPath
-        Secret    = $SecretName
-    } | ConvertTo-Json -Depth 3
+    Write-Host "📝 Registering restic secret info..." -ForegroundColor Cyan
+    Write-Host "  ├─ Repository path: '$RepoPath'"
+    Write-Host "  ├─ Secret name: '$SecretName'"
+    Write-Host "  └─ Log path: '$LogPath'"
+
+    if (-not (Test-Path $LogPath)) {
+        # Create an empty JSON object if it doesn't exist
+        '{}' | Out-File -Encoding UTF8 -FilePath $LogPath
+    }
 
     try {
-        Add-Content -Path $logFile -Value $entry
-        Write-Host "🔑 Secret name logged to '$logFile'."
+        $json = Get-Content $LogPath -Raw | ConvertFrom-Json
     } catch {
-        Throw "❌ Failed to log secret name: $_"
+        Throw "❌ Failed to read JSON log at '$LogPath': $_"
     }
-}
 
-# Initialize-Repository -RepoPath "C:\Backup"
+    $repoKey = [System.IO.Path]::GetFileName($RepoPath.TrimEnd('\', '/'))
+
+    $json.$repoKey = @{
+        path      = $RepoPath
+        timestamp = (Get-Date).ToString("o")
+        secret    = $SecretName
+    }
+
+    # Save the updated JSON
+    $json | ConvertTo-Json -Depth 3 | Set-Content -Encoding UTF8 -Path $LogPath
+
+    Write-Host "✅ Logged restic secret info for '$repoKey' to '$LogPath'." -ForegroundColor Green
+}

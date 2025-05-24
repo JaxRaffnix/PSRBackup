@@ -98,4 +98,5 @@ function Test-Backupsize {
     } else {
         Write-Host "✅ No large files or folders found. Safe to proceed." -ForegroundColor Green
     }
+    Write-Host ""
 }

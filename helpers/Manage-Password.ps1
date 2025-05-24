@@ -1,5 +1,5 @@
 
-function Save-ResticPassword {
+function Create-ResticPassword {
     param (
         [string]$Name = "ResticPassword",
         [switch]$Force
@@ -9,10 +9,26 @@ function Save-ResticPassword {
         Throw "❌ A password with the name '$Name' already exists. Use -Force to overwrite."
     }
 
-    $secStr = Read-Host "Enter Restic password" -AsSecureString
+    # Auto-generate a strong password
+    $plainPassword = New-RandomSecurePassword
+    $secStr = ConvertTo-SecureString $plainPassword -AsPlainText -Force
+
     Set-Secret -Name $Name -Secret $secStr
 }
 
+
+function New-RandomSecurePassword {
+    param (
+        [int]$Length = 32
+    )
+
+    $bytes = [byte[]]::new($Length)
+    [System.Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+
+    $chars = ([char[]](33..126)) # Printable ASCII characters
+    $securePassword = -join ($bytes | ForEach-Object { $chars[$_ % $chars.Length] })
+    return $securePassword
+}
 function Get-ResticPassword {
     param (
         [string]$Name = "ResticPassword"
@@ -37,13 +53,15 @@ function Get-DerivedSecretName {
 
 function Set-ResticEnvironment {
     param (
-
         [Parameter(Mandatory)]
-        [string]$PasswordSecretName,
+        [string]$RepoPath,
 
-        [Parameter(Mandatory)]
-        [string]$RepoPath
+        [string]$PasswordSecretName
     )
+
+    if (-not $PasswordSecretName) {
+        $PasswordSecretName = Get-DerivedSecretName -RepoPath $RepoPath
+    }
 
     try {
         $securePassword = Get-ResticPassword -Name $PasswordSecretName

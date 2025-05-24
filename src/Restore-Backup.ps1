@@ -1,4 +1,4 @@
-function Restore-ResticBackup {
+function Restore-Backup {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -8,7 +8,7 @@ function Restore-ResticBackup {
         [string]$TargetPath,
 
         [string]$SnapshotId = "latest",
-        [string]$SubPath = ".",
+        # [string]$SubPath = ,
         [string]$PasswordSecretName
     )
 
@@ -24,7 +24,6 @@ function Restore-ResticBackup {
     if (-not $PasswordSecretName) {
         $PasswordSecretName = Get-DerivedSecretName -RepoPath $RepoPath
     }
-
     Set-ResticEnvironment -RepoPath $RepoPath -PasswordSecretName $PasswordSecretName
 
     try {
@@ -32,7 +31,8 @@ function Restore-ResticBackup {
             New-Item -ItemType Directory -Path $TargetPath -Force | Out-Null
         }
 
-        & restic restore $SnapshotId --target $TargetPath --path $SubPath
+        & restic restore $SnapshotId --target $TargetPath 
+        # --path $SubPath
         if ($LASTEXITCODE -ne 0) {
             Throw "❌ Restic restore failed with exit code $LASTEXITCODE."
         }

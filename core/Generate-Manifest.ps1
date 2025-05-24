@@ -10,4 +10,6 @@ New-ModuleManifest -Path .\PSRBackup.psd1 `
         'Initialize-Repository'
         'Restore-Backup'
         'Start-Backup'
+        'Set-ResticEnvironment'
+        'Reset-ResticEnvironment'
     )

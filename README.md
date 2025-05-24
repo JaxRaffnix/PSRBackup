@@ -49,12 +49,12 @@ Start-Backup -RepoPath "D:\Backups\ResticRepo" -SourcePath "C:\Users\Jax\Documen
 #### Restore a Backup
 
 ```powershell
-Restore-ResticBackup -RepoPath "D:\Backups\ResticRepo" -TargetPath "C:\Restore"
+Restore-Backup -RepoPath "D:\Backups\ResticRepo" -TargetPath "C:\Restore"
 ```
 
 #### Manage Passwords
 
-- Save a password: `Save-ResticPassword -Name "ResticPassword_MyRepo"`
+- Save a password: `Create-ResticPassword -Name "ResticPassword_MyRepo"`
 - Retrieve a password: `Get-ResticPassword -Name "ResticPassword_MyRepo"`
 
 ## File Structure

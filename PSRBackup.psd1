@@ -18,7 +18,7 @@ ModuleVersion = '1.0.0'
 # CompatiblePSEditions = @()
 
 # ID used to uniquely identify this module
-GUID = 'fa78ccd2-21c9-4c04-aff9-b4cf31760ea3'
+GUID = '8f626976-f894-4b81-b3de-8652a1a427f8'
 
 # Author of this module
 Author = 'Jan Hoegen'
@@ -69,7 +69,8 @@ ScriptsToProcess = 'core\Initialize-Module.ps1'
 # NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = 'Initialize-Repository', 'Restore-Backup', 'Start-Backup'
+FunctionsToExport = 'Initialize-Repository', 'Restore-Backup', 'Start-Backup', 
+               'Set-ResticEnvironment', 'Reset-ResticEnvironment'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = '*'

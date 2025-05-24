@@ -15,12 +15,10 @@ function Start-Backup {
     )
 
     Write-Host "🔄 Starting restic backup..." -ForegroundColor Cyan
-    Write-Host "  ├─ Repository path: '$RepoPath'"
-    Write-Host "  ├─ Source path: '$SourcePath'"
     if ($ExcludeFile) {Write-Host "  ├─ Exclude file: '$ExcludeFile'"}   
     if ($PasswordSecretName) {Write-Host "  ├─ Password secret name: '$PasswordSecretName'"}  
-    Write-Host "  ├─ Max file size: $MaxFileSize bytes"
-    Write-Host "  └─ Max folder size: $MaxFolderSize bytes"
+    Write-Host "  ├─ Repository path: '$RepoPath'"
+    Write-Host "  └─ Source path: '$SourcePath'"
     
     Test-Installation -App 'restic'
 
@@ -45,7 +43,6 @@ function Start-Backup {
     if (-not $PasswordSecretName) {
         $PasswordSecretName = Get-DerivedSecretName -RepoPath $RepoPath
     }
-
     Set-ResticEnvironment -RepoPath $RepoPath -PasswordSecretName $PasswordSecretName
 
     try {
@@ -64,7 +61,7 @@ function Start-Backup {
         Write-Host "📦 Backup completed successfully."
 
         Write-Host "`n🔍 Running cleanup..."
-        & restic.exe forget --prune --keep-hourly 8 --keep-daily 3 --keep-weekly 2 --keep-monthly 6 --keep-yearly 5
+        & restic.exe forget --prune --keep-hourly 8 --keep-daily 7 --keep-weekly 2 --keep-monthly 6 --keep-yearly 5
         if ($LASTEXITCODE -ne 0) { Throw "❌ Forget failed (exit code $LASTEXITCODE)." }
 
         & restic.exe cache --cleanup
