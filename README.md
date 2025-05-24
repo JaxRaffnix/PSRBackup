@@ -10,8 +10,7 @@
 - 📏 Pre-backup checks for large files/folders
 - 🤖 Automated backup, prune, cache cleanup, and integrity check
 - ♻️ Easy restore from any snapshot
-- 🧩 Modular and extensible PowerShell codebase
-
+- 
 ## Getting Started
 
 ### Prerequisites
@@ -52,54 +51,44 @@ Start-Backup -RepoPath "D:\Backups\ResticRepo" -SourcePath "C:\Users\Jax\Documen
 Restore-Backup -RepoPath "D:\Backups\ResticRepo" -TargetPath "C:\Restore"
 ```
 
-#### 🔐 Manage Passwords
-
-- Save a password: `Set-ResticPassword -Name "ResticPassword_MyRepo"`
-- Retrieve a password: `Get-ResticPassword -Name "ResticPassword_MyRepo"`
-
-## File Structure
-
-- `src/` — 📁 Main backup/restore/init scripts
-- `helpers/` — 🛠️ Utility functions (password, installation, backup size checks)
-- `core/` — 🧩 Module initialization and manifest
-- `config/` — 🚫 Exclusion lists
-- `setup/` — ⬇️ Installation script
-
 ## Excluding Files/Folders
 
 Edit [`config/exclude.txt`](config/exclude.txt) to add patterns (one per line) for files/folders to exclude from backups.
 
 ## TO DO
 
-- 📅 Calendar Backup
-- 👥 Contacts Backup
 - 🗒️ OneNote Backup
 - 🎮 Playnite Backup: https://api.playnite.link/docs/manual/library/backup.html
 - 🖥️ NVIDIA Profile Backup: profile inspector
 - 📨 Thunderbird Backup
-- 📂 File Backup
+- Taskbar settings: C:\Users\Jax\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar
 
 ## Emoji Legend
 
-| Emoji | Meaning                              |
-|-------|--------------------------------------|
-
-| 🚀    | Initialize                     |
-| 📦    | Backup operation                     |
-| ♻️    | Restore operation                    |
-| 🔐    | Passwords/security                   |
-| 🗝️    | Secret/key management                |
-| 🚫    | Exclude/ignore                       |
-| 📏    | Size check/validation                |
-| 🤖    | Automation                           |
-| 🧩    | Modular/extensible                   |
-| 🛠️    | Helper/utilities                     |
-| ⬇️    | Install                              |
-| 📁    | File/folder                          |
-| 🗒️    | Notes/OneNote                        |
-| 📅    | Calendar                             |
-| 👥    | Contacts                             |
-| 🎮    | Game/Playnite                        |
-| 🖥️    | System/NVIDIA                        |
-| 📨    | Email/Thunderbird                    |
+| Emoji | Meaning                       |
+|-------|-------------------------------|
+| ⬇️    | Installing                    |
+| 📥    | Importing                     |
+| ❌    | Error                         |
+| ⚠️    | Warning                       |
+| ✅    | Success                       |
+| 🔄    | Reset                         |
+| 🔍    | File scan, integrity check    |
+| 🚨    | Alert                         |
+| 🗑️    | Delete                        |
+| 📁    | Copy, move, create            |
+| 📝    | Logging                       |
+| 🧹    | Cleanup                       |
+| 🚀    | Initialize                    |
+| 📦    | Backup operation              |
+| ♻️    | Restore operation             |
+| 🔐    | Passwords                     |
+| 🗝️    | Key management                |
+| 🛠️    | Helper/utilities              |
+| 🗒️    | Notes/OneNote                 |
+| 📅    | Calendar                      |
+| 👥    | Contacts                      |
+| 🎮    | Playnite                 |
+| 🖥️    | System/NVIDIA                 |
+| 📨    | Thunderbird             |
 

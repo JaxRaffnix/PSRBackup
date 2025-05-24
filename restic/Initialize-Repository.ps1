@@ -1,5 +1,33 @@
 function Initialize-Repository {
-    [CmdletBinding()]
+    <#
+    .SYNOPSIS
+        Initializes a new backup repository in the specified location.
+
+    .DESCRIPTION
+        This script sets up the necessary folder structure and initializes a new restic repository.
+
+    .PARAMETER RepoPath
+        The file system path where the backup repository should be initialized.
+        This parameter is required and must point to a valid directory location.
+
+    .PARAMETER Key
+        The SecretManagement key used to get the restic repository password.
+        If not provided, a key will be derived from the repository path.
+
+    .PARAMETER Force
+        If specified, forces the initialization even if the target directory is not empty or already contains a repository.
+        Use with caution as this may overwrite existing data.
+
+    .EXAMPLE
+        Initialize-Repository -Path "C:\Backups\MyRepo"
+
+        Initializes a new backup repository at the specified path.
+
+    .EXAMPLE
+        Initialize-Repository -Path "C:\Backups\MyRepo" -Force
+
+        Initializes a new backup repository at the specified path, overwriting any existing repository data.
+    #>
     param (
         [Parameter(Mandatory)]
         [string]$RepoPath,
@@ -70,7 +98,7 @@ function Register-KeyMapping {
     Write-Host "  └─ Log path: '$LogPath'"
 
     $repoKey = [System.IO.Path]::GetFileName($RepoPath.TrimEnd('\', '/'))
-    Write-Host "📦 Derived repository name: '$repoKey'"
+    Write-Host "🛠️ Derived repository name: '$repoKey'"
 
     if (-not (Test-Path $LogPath)) {
         '{}' | Out-File -Encoding UTF8 -FilePath $LogPath

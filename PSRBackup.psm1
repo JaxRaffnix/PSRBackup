@@ -6,7 +6,12 @@ foreach ($file in (Get-ChildItem -Path $HelperFolder -Filter '*.ps1')) {
     . $file.FullName
 }
 
-$SourceFolder = "$ModulePath\src"
-foreach ($file in (Get-ChildItem -Path $SourceFolder -Filter '*.ps1')) {
+$ResticFolder = "$ModulePath\restic"
+foreach ($file in (Get-ChildItem -Path $ResticFolder -Filter '*.ps1')) {
+    . $file.FullName
+}
+
+$ProfileFolder = "$ModulePath\profiles"
+foreach ($file in (Get-ChildItem -Path $ProfileFolder -Filter '*.ps1')) {
     . $file.FullName
 }

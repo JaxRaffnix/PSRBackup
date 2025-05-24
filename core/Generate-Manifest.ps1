@@ -1,4 +1,10 @@
-$ModuleName = Split-Path (Split-Path $PSScriptRoot -Parent) -Leaf
+<#
+.SYNOPSIS
+Generates a manifest file for the backup process.
+
+.EXAMPLE
+.\Generate-Manifest.ps1
+#>
 
 New-ModuleManifest -Path .\$ModuleName.psd1 `
     -RootModule 'PSRBackup.psm1' `
