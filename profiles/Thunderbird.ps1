@@ -24,7 +24,7 @@ function Backup-Thunderbird {
         [Parameter(Mandatory)]
         [string]$TargetPath,
 
-        [string]$SourcePath = "$env:Appdata\thunderbird\Profiles",
+        [string]$SourcePath = "$env:Appdata\thunderbird",
 
         [string]$ExcludeFile = "$PSScriptRoot\..\config\thunderbird-exclude.txt"
     )
@@ -72,5 +72,5 @@ function Backup-Thunderbird {
     }
 }
 
-# Backup-Thunderbird -TargetPath "D:\Thunderbird Backup" -SourcePath  "$env:Appdata\thunderbird\Profiles"
-Backup-Thunderbird -TargetPath "$env:Appdata\thunderbird\Profiles" -SourcePath  "D:\Thunderbird Backup"
+# Backup-Thunderbird -TargetPath "D:\Thunderbird Backup" -SourcePath  "$env:Appdata\thunderbird"
+# Backup-Thunderbird -TargetPath "$env:Appdata\thunderbird" -SourcePath  "D:\Thunderbird Backup"
