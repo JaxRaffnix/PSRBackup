@@ -12,6 +12,9 @@ function Set-ResticEnvironment {
     .PARAMETER Key
     The SecretManagement key used to retrieve the repository password. If not provided, the key is derived from the repository path.
 
+    .PARAMETER Silent
+    If specified, suppresses output messages during the execution of the function.
+
     .EXAMPLE
     Set-ResticEnvironment -RepoPath "C:\Backups\ResticRepo"
 
@@ -30,7 +33,9 @@ function Set-ResticEnvironment {
         [Parameter(Mandatory)]
         [string]$RepoPath,
 
-        [string]$Key
+        [string]$Key,
+
+        [string]$Silent
     )
 
     if (-not $Key) {
@@ -51,7 +56,11 @@ function Set-ResticEnvironment {
 
     $env:RESTIC_REPOSITORY = $RepoPath
 
-    Write-Host "🔐 Environment variables set for restic repository at '$RepoPath' with key $Key."
+    if (-not $Silent) {
+        Write-Host "🔐 Environment variables set for restic repository at '$RepoPath' with key $Key."
+        Write-Warning "⚠️ The RESTIC_PASSWORD is stored in plain text in the environment variable for this session. Ensure to reset it after use by calling 'Reset-ResticEnvironment'."
+    }
+    
 }
 
 function Reset-ResticEnvironment {
@@ -62,6 +71,9 @@ function Reset-ResticEnvironment {
     .DESCRIPTION
     The Reset-ResticEnvironment function restores the RESTIC_PASSWORD environment variable to its original value if it was previously saved, or removes it if not. It also removes the RESTIC_REPOSITORY environment variable. After cleaning up the environment variables, it triggers garbage collection to free up memory and outputs a message indicating the reset is complete.
 
+    .PARAMETER Silent
+    If specified, suppresses output messages during the execution of the function.
+
     .EXAMPLE
     Reset-ResticEnvironment
 
@@ -71,6 +83,13 @@ function Reset-ResticEnvironment {
     This function is intended to be used in scripts that interact with Restic repositories and require cleanup of sensitive environment variables after use.
     However, it can also be used by the user in a console to manually reset the environment variables if needed.
     #>
+
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        [string]
+        $Silent
+    )
 
     if ($script:originalResticPassword) {
         $env:RESTIC_PASSWORD = $script:originalResticPassword
@@ -83,5 +102,7 @@ function Reset-ResticEnvironment {
     [System.GC]::Collect()
     [System.GC]::WaitForPendingFinalizers()
 
-    Write-Host "🔄 Environment variables for restic repository have been reset."
+    if (-not $Silent) {
+        Write-Host "🔄 Environment variables for restic repository have been reset."
+    }
 }

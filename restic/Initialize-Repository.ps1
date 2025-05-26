@@ -63,7 +63,7 @@ function Initialize-Repository {
     }
     Set-RepositoryPassword -Key $Key -Force:$Force
     Register-KeyMapping -RepoPath $RepoPath -Key $Key
-    Set-ResticEnvironment -RepoPath $RepoPath -Key $Key
+    Set-ResticEnvironment -RepoPath $RepoPath -Key $Key -Silent
 
     Write-Host "📁 Creating repository..."
     try {
@@ -72,7 +72,7 @@ function Initialize-Repository {
             Throw "❌ Restic init failed with exit code $LASTEXITCODE."
         }
     } finally {
-        Reset-ResticEnvironment
+        Reset-ResticEnvironment -Silent
     }
 
     Write-Host "✅ Repository initialized." -ForegroundColor Green

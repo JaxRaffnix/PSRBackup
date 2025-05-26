@@ -50,7 +50,7 @@ function Restore-Backup {
     if (-not $Key) {
         $Key = Get-DerivedKey -RepoPath $RepoPath
     }
-    Set-ResticEnvironment -RepoPath $RepoPath -Key $Key
+    Set-ResticEnvironment -RepoPath $RepoPath -Key $Key -Silent
 
     try {
         if (-not (Test-Path $TargetPath)) {
@@ -62,7 +62,7 @@ function Restore-Backup {
             Throw "❌ Restic restore failed with exit code $LASTEXITCODE."
         }
     } finally {
-        Reset-ResticEnvironment
+        Reset-ResticEnvironment -Silent
     }
 
     Write-Host "✅ Restore completed." -ForegroundColor Green

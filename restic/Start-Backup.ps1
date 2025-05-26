@@ -85,7 +85,7 @@ function Start-Backup {
     if (-not $Key) {
         $Key = Get-DerivedKey -RepoPath $RepoPath
     }
-    Set-ResticEnvironment -RepoPath $RepoPath -Key $Key
+    Set-ResticEnvironment -RepoPath $RepoPath -Key $Key -Silent
 
     $ResticIgnoreFileName = ".resticignore"
     try {
@@ -118,6 +118,6 @@ function Start-Backup {
 
         Write-Host "`n✅ Backup completed successfully." -ForegroundColor Green
     } finally {
-        Reset-ResticEnvironment
+        Reset-ResticEnvironment -Silent
     }
 }
