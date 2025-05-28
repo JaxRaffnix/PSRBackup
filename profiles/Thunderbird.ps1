@@ -72,5 +72,5 @@ function Backup-Thunderbird {
     }
 }
 
-# Backup-Thunderbird -TargetPath "D:\Thunderbird Backup" -SourcePath  "$env:Appdata\thunderbird"
-# Backup-Thunderbird -TargetPath "$env:Appdata\thunderbird" -SourcePath  "D:\Thunderbird Backup"
+# Backup-Thunderbird -TargetPath "D:\Thunderbird Backup" -SourcePath "$env:Appdata\thunderbird"
+Backup-Thunderbird -TargetPath "$env:Appdata\thunderbird" -SourcePath "D:\Thunderbird Backup"
