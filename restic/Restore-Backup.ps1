@@ -1,4 +1,4 @@
-function Restore-Backup {
+﻿function Restore-Backup {
     <#
     .SYNOPSIS
         Restores a backup from a restic repository to a specified target directory.

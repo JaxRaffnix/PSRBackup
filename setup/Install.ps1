@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Installs the current PowerShell module into the user's module path.
 
@@ -17,12 +17,17 @@ This command installs the module located in the current folder into the user's P
 module path and imports it into the current session.
 #>
 
+#  in PowerShell 7
+
 # Elevate privileges
-if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Warning "⚠️ This script needs to be run as an administrator in PowerShell 7. Restarting with elevated privileges..."
-    Start-Process pwsh.exe "-NoExit -File `"$PSCommandPath`"" -Verb RunAs
-    exit
-}
+# if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+#     Write-Warning "⚠️ This script needs to be run as an administrator. Restarting with elevated privileges..."
+#     Start-Process powershell.exe "-NoExit -File `"$PSCommandPath`"" -Verb RunAs
+#     exit
+# }
+
+# *: Make sure emojis are displayed correctly in the console
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 # Fix untrusted script execution
 $RequiredPolicy = "RemoteSigned"
@@ -36,10 +41,15 @@ try {
     Write-Error "❌ Failed to set execution policy: $_"
 }
 
+# Ensure PowerShell version is 5.1
+if ($PSVersionTable.PSVersion.Major -ne 5) {
+    Throw "This script requires PowerShell 5.1. Current version: $($PSVersionTable.PSVersion)"
+}
+
 # Define module info
 $ModuleName = Split-Path (Split-Path $PSScriptRoot -Parent) -Leaf
 $ModulePath = Split-Path -Path $PSScriptRoot -Parent
-$UserModulesPath = Join-Path -Path $env:USERPROFILE -ChildPath "Documents\PowerShell\Modules"
+$UserModulesPath = Join-Path -Path $env:USERPROFILE -ChildPath "Documents\WindowsPowerShell\Modules"
 $TargetPath = Join-Path -Path $UserModulesPath -ChildPath $ModuleName
 
 Write-Host "⬇️ Installing module..." -ForegroundColor Cyan
@@ -89,9 +99,9 @@ try {
 
 # Import module
 try {
-    if (-not ($env:PSModulePath -like "*$UserModulesPath*")) {
-        $env:PSModulePath += ";$UserModulesPath"
-    }
+    # if (-not ($env:PSModulePath -like "*$UserModulesPath*")) {
+    #     $env:PSModulePath += ";$UserModulesPath"
+    # }
     Import-Module $ModuleName -Force -ErrorAction Stop
     Write-Host "✅ Module '$ModuleName' installed and imported." -ForegroundColor Green
 } catch {

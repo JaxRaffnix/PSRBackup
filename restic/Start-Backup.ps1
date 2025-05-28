@@ -1,4 +1,4 @@
-function Start-Backup {
+﻿function Start-Backup {
     <#
     .SYNOPSIS
         Performs a backup of files from a source directory to a restic repository with optional exclusions and size checks.

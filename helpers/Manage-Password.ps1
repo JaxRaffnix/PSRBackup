@@ -16,10 +16,11 @@ function Set-RepositoryPassword {
     }
 
     # Generate a random 256-bit key (32 bytes) and convert it to a printable password
-    $bytes = [byte[]]::new(32) # 32 bytes for a 256-bit key
-    [System.Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+    $bytes = New-Object byte[] 32 # 32 bytes for a 256-bit key
+    $rand = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    $rand.GetBytes($bytes)
     $chars = ([char[]](33..126)) # Printable ASCII characters
-    $plainPassword = -join ($bytes | ForEach-Object { $chars[$_ % $chars.Length] })
+    $plainPassword = -join ($bytes | ForEach-Object { $chars[($_ % $chars.Length)] })
 
     $SecurePassword = ConvertTo-SecureString $plainPassword -AsPlainText -Force
     Set-Secret -Name $Key -Secret $SecurePassword

@@ -1,10 +1,12 @@
-<#
+﻿<#
 .SYNOPSIS
 Initializes the PSRBackup module and prepares the environment for use.
 
 .DESCRIPTION
 This script sets up the necessary environment, variables, and dependencies required for the PSRBackup module to function correctly. It ensures that all prerequisites are met and performs any initial configuration needed before other module functions are executed.
 #>
+
+. $PSScriptRoot\..\helpers\Test-Installation.ps1
 
 $ModuleName = Split-Path (Split-Path $PSScriptRoot -Parent) -Leaf
 

@@ -1,4 +1,4 @@
-function Initialize-Repository {
+﻿function Initialize-Repository {
     <#
     .SYNOPSIS
         Initializes a new backup repository in the specified location.

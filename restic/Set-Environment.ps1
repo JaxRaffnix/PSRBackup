@@ -1,4 +1,4 @@
-function Set-ResticEnvironment {
+﻿function Set-ResticEnvironment {
     <#
     .SYNOPSIS
     Sets environment variables required for interacting with a restic repository.
