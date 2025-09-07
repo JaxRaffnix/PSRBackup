@@ -35,7 +35,7 @@
 
         [string]$Key,
 
-        [string]$Silent
+        [switch]$Silent
     )
 
     if (-not $Key) {
