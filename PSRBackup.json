@@ -1,0 +1,8 @@
+{
+    "ModuleVersion": "1.0.0",
+    "Author": "Jan Hoegen",
+    "Description": "A PowerShell module that simplifies and automates backups for user files and application settings.",
+    "ProjectUri": "https://github.com/JaxRaffnix/PSRBackup",
+    "PowerShellVersion": "5.1",
+    "IgnoreFiles": [".git", ".vscode", "PSRBackup.json"]
+}

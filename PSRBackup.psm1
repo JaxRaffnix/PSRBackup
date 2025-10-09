@@ -1,17 +1,9 @@
-
-$ModulePath = $PSScriptRoot
-
-$HelperFolder = "$ModulePath\helpers"
-foreach ($file in (Get-ChildItem -Path $HelperFolder -Filter '*.ps1')) {
-    . $file.FullName
+# Import all private helpers
+Get-ChildItem -Path "$PSScriptRoot\Private\*.ps1" -Recurse | ForEach-Object {
+     . $_.FullName
 }
 
-$ResticFolder = "$ModulePath\restic"
-foreach ($file in (Get-ChildItem -Path $ResticFolder -Filter '*.ps1')) {
-    . $file.FullName
-}
-
-$ProfileFolder = "$ModulePath\profiles"
-foreach ($file in (Get-ChildItem -Path $ProfileFolder -Filter '*.ps1')) {
-    . $file.FullName
+# Import all public functions
+Get-ChildItem -Path "$PSScriptRoot\Public\*.ps1" -Recurse | ForEach-Object {
+     . $_.FullName
 }
