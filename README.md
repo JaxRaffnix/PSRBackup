@@ -57,12 +57,15 @@ Edit [`config/exclude.txt`](config/exclude.txt) to add patterns (one per line) f
 
 ## TO DO
 
+- deafult behavior script für mein eigenes backup erstellen.
+
 - calender und kontake backup?
 
+- Pinned Taskbar apps: `$USER\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar`  
+- powertoys backup `$USER\documents\powertoys\backup`, restore manaully in powertoys settings
 - 🗒️ OneNote Backup
 - 🎮 Playnite Backup: https://api.playnite.link/docs/manual/library/backup.html
 - 🖥️ NVIDIA Profile Backup: profile inspector
-- Taskbar settings: C:\Users\Jax\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar
 
 ### Automate script execution
 
